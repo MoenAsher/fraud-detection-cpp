@@ -31,7 +31,7 @@ Transaction parseTransaction(const std::string& line) {
 }
 
 int main() {
-    ArrayStore store(1000); // Start with a small number
+    ArrayStore store(10000);
     std::ifstream file("data/financial_fraud_detection_dataset.csv");
     if (!file) {
         std::cout << "Could not open CSV file!" << std::endl;
@@ -40,11 +40,15 @@ int main() {
     std::string line;
     // Skip header
     getline(file, line);
+    int max_to_load = 10000; // Limit for testing
+    int count = 0;
     // Read each transaction
     while (getline(file, line)) {
         if (line.empty()) continue;
         Transaction t = parseTransaction(line);
         store.addTransaction(t);
+        count++;
+        if (count >= max_to_load) break; // Stop after 10,000
     }
     file.close();
     std::cout << "Loaded " << store.getSize() << " transactions.\n";

@@ -1,5 +1,6 @@
 // Initial commit message: I added this after finishing the array data structure
 #include "array_store.hpp"
+#include "transaction.hpp"
 #include <iostream> // For display
 
 // Constructor: initializes the array with a given maximum size
@@ -156,4 +157,18 @@ nlohmann::json ArrayStore::toJSON() const {
         j_array.push_back(j_trans); // Add transaction to JSON array
     }
     return j_array; // Return the JSON array
+}
+
+// Gets all fraudulent transactions
+ArrayStore ArrayStore::getFraudulentTransactions() const {
+    ArrayStore fraudulent(capacity); // Create a new ArrayStore with the same capacity
+    for (int i = 0; i < size; ++i) {
+        // Assuming 'is_fraud' is stored as a string like "TRUE" or "FALSE"
+        // and we need case-insensitive comparison.
+        // Using toLower for robustness.
+        if (toLower(transactions[i].is_fraud) == "true") {
+            fraudulent.addTransaction(transactions[i]);
+        }
+    }
+    return fraudulent;
 } 

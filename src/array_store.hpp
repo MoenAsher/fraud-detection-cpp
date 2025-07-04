@@ -3,28 +3,7 @@
 
 #include <string>
 #include "../lib/json.hpp" // For JSON export
-
-// Structure to represent a single financial transaction
-struct Transaction {
-    std::string transaction_id;
-    std::string timestamp;
-    std::string sender_account;
-    std::string receiver_account;
-    double amount;
-    std::string transaction_type;
-    std::string merchant_category;
-    std::string location;
-    std::string device_used;
-    std::string is_fraud;
-    std::string fraud_type;
-    std::string time_since_last_transaction;
-    std::string spending_deviation;
-    std::string velocity_score;
-    std::string geo_anomaly;
-    std::string payment_channel;
-    std::string ip_address;
-    std::string device_hash;
-};
+#include "transaction.hpp" // Use shared Transaction struct and utilities
 
 // Array-based class to store and manage transactions
 class ArrayStore {
@@ -58,6 +37,9 @@ public:
 
     // Get the number of transactions
     int getSize() const;
+
+    // Get fraudulent transactions
+    ArrayStore getFraudulentTransactions() const;
 };
 
 #endif // ARRAY_STORE_HPP 

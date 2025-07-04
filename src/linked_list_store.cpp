@@ -1,4 +1,5 @@
 #include "linked_list_store.hpp"
+#include "transaction.hpp"
 #include <iostream>
 
 // Constructor: initializes an empty linked list
@@ -219,4 +220,18 @@ nlohmann::json LinkedListStore::toJSON() const {
     }
     
     return j_array;
+}
+
+// Gets all fraudulent transactions
+LinkedListStore LinkedListStore::getFraudulentTransactions() const {
+    LinkedListStore fraudulent; // Create a new LinkedListStore for fraudulent transactions
+    Node* current = head;
+    while (current != nullptr) {
+        // Assuming 'is_fraud' is stored as a string like "TRUE" or "FALSE"
+        if (toLower(current->data.is_fraud) == "true") {
+            fraudulent.addTransaction(current->data);
+        }
+        current = current->next;
+    }
+    return fraudulent;
 } 

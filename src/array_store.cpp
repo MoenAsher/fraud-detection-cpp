@@ -2,6 +2,7 @@
 #include "array_store.hpp"
 #include "transaction.hpp"
 #include <iostream> // For display
+#include <map>
 
 // Constructor: initializes the array with a given maximum size
 ArrayStore::ArrayStore(int max_size) {
@@ -42,8 +43,11 @@ int ArrayStore::getSize() const {
 
 // Displays all transactions in the array to the console
 void ArrayStore::display() const {
-    std::cout << "\n--- Transactions ---\n";
-    for (int i = 0; i < size; ++i) {
+    std::cout << "\n--- Transactions (Array) ---\n";
+    
+    // Show first 10 transactions
+    int displayCount = (size > 10) ? 10 : size;
+    for (int i = 0; i < displayCount; ++i) {
         const Transaction& t = transactions[i];
         std::cout << "ID: " << t.transaction_id
                   << ", Date: " << t.timestamp
@@ -53,6 +57,34 @@ void ArrayStore::display() const {
                   << ", Channel: " << t.payment_channel
                   << std::endl;
     }
+    
+    // If there are more transactions, ask user if they want to see all
+    if (size > 10) {
+        std::cout << "... and " << (size - 10) << " more transactions\n";
+        std::cout << "Total: " << size << " transactions\n";
+        std::cout << "Show all transactions? (y/n): ";
+        
+        char choice;
+        std::cin >> choice;
+        
+        if (choice == 'y' || choice == 'Y') {
+            std::cout << "\n--- ALL TRANSACTIONS (Array) ---\n";
+            for (int i = 0; i < size; ++i) {
+                const Transaction& t = transactions[i];
+                std::cout << "ID: " << t.transaction_id
+                          << ", Date: " << t.timestamp
+                          << ", Amount: " << t.amount
+                          << ", Type: " << t.transaction_type
+                          << ", Location: " << t.location
+                          << ", Channel: " << t.payment_channel
+                          << std::endl;
+            }
+            std::cout << "Total: " << size << " transactions\n";
+        }
+    } else {
+        std::cout << "Total: " << size << " transactions\n";
+    }
+    
     std::cout << "-------------------\n";
 }
 
@@ -163,12 +195,45 @@ nlohmann::json ArrayStore::toJSON() const {
 ArrayStore ArrayStore::getFraudulentTransactions() const {
     ArrayStore fraudulent(capacity); // Create a new ArrayStore with the same capacity
     for (int i = 0; i < size; ++i) {
-        // Assuming 'is_fraud' is stored as a string like "TRUE" or "FALSE"
-        // and we need case-insensitive comparison.
-        // Using toLower for robustness.
-        if (toLower(transactions[i].is_fraud) == "true") {
+        std::string fraudValue = transactions[i].is_fraud;
+        // Check for TRUE/FALSE values (case-insensitive)
+        if (toLower(fraudValue) == "true") {
             fraudulent.addTransaction(transactions[i]);
         }
     }
     return fraudulent;
+}
+
+// Debug method to check fraud values
+void ArrayStore::debugFraudValues() const {
+    std::cout << "\n--- DEBUG: Fraud Values in Array ---\n";
+    std::cout << "Checking first 20 transactions:\n";
+    for (int i = 0; i < std::min(20, size); ++i) {
+        std::cout << "Transaction " << i << " ID: " << transactions[i].transaction_id 
+                  << " | is_fraud: '" << transactions[i].is_fraud << "'\n";
+    }
+    
+    // Count different fraud values
+    std::map<std::string, int> fraudCounts;
+    int trueCount = 0;
+    int falseCount = 0;
+    
+    for (int i = 0; i < size; ++i) {
+        std::string fraudValue = transactions[i].is_fraud;
+        fraudCounts[fraudValue]++;
+        
+        // Count TRUE/FALSE specifically
+        if (toLower(fraudValue) == "true") trueCount++;
+        if (toLower(fraudValue) == "false") falseCount++;
+    }
+    
+    std::cout << "\nFraud value distribution across all " << size << " transactions:\n";
+    for (const auto& pair : fraudCounts) {
+        std::cout << "Value '" << pair.first << "': " << pair.second << " transactions\n";
+    }
+    
+    std::cout << "\nCase-insensitive counts:\n";
+    std::cout << "TRUE values: " << trueCount << "\n";
+    std::cout << "FALSE values: " << falseCount << "\n";
+    std::cout << "Total: " << (trueCount + falseCount) << " (should equal " << size << ")\n";
 } 

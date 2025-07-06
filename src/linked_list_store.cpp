@@ -2,24 +2,24 @@
 #include "transaction.hpp"
 #include <iostream>
 
-// Constructor: initializes an empty linked list
+// constructor: initialize empty linked list
 LinkedListStore::LinkedListStore() {
     head = nullptr;
     size = 0;
 }
 
-// Destructor: releases all memory used by the linked list
+// destructor: release all memory
 LinkedListStore::~LinkedListStore() {
     deleteList(head);
 }
 
-// Copy constructor: creates a deep copy of another LinkedListStore
+// copy constructor: create deep copy
 LinkedListStore::LinkedListStore(const LinkedListStore& other) {
     head = copyList(other.head);
     size = other.size;
 }
 
-// Assignment operator: creates a deep copy of another LinkedListStore
+// assignment operator: create deep copy
 LinkedListStore& LinkedListStore::operator=(const LinkedListStore& other) {
     if (this != &other) {
         deleteList(head);
@@ -29,7 +29,7 @@ LinkedListStore& LinkedListStore::operator=(const LinkedListStore& other) {
     return *this;
 }
 
-// Helper method to delete all nodes in a linked list
+// helper method to delete all nodes
 void LinkedListStore::deleteList(Node* head) {
     while (head != nullptr) {
         Node* temp = head;
@@ -38,7 +38,7 @@ void LinkedListStore::deleteList(Node* head) {
     }
 }
 
-// Helper method to create a deep copy of a linked list
+// helper method to create deep copy
 Node* LinkedListStore::copyList(Node* head) const {
     if (head == nullptr) return nullptr;
     
@@ -55,7 +55,7 @@ Node* LinkedListStore::copyList(Node* head) const {
     return newHead;
 }
 
-// Adds a transaction to the end of the linked list
+// add transaction to end of linked list
 void LinkedListStore::addTransaction(const Transaction& t) {
     Node* newNode = new Node(t);
     
@@ -71,17 +71,19 @@ void LinkedListStore::addTransaction(const Transaction& t) {
     size++;
 }
 
-// Returns the current number of transactions
+// return current number of transactions
 int LinkedListStore::getSize() const {
     return size;
 }
 
-// Displays all transactions in the linked list to the console
+// display all transactions to console
 void LinkedListStore::display() const {
     std::cout << "\n--- Transactions (Linked List) ---\n";
     Node* current = head;
     int count = 0;
-    while (current != nullptr && count < 10) { // Show first 10 for readability
+    
+    // show first 10 transactions
+    while (current != nullptr && count < 10) {
         const Transaction& t = current->data;
         std::cout << "ID: " << t.transaction_id
                   << ", Date: " << t.timestamp
@@ -93,14 +95,42 @@ void LinkedListStore::display() const {
         current = current->next;
         count++;
     }
+    
+    // if there are more transactions, ask user if they want to see all
     if (size > 10) {
         std::cout << "... and " << (size - 10) << " more transactions\n";
+        std::cout << "Total: " << size << " transactions\n";
+        std::cout << "Show all transactions? (y/n): ";
+        
+        char choice;
+        std::cin >> choice;
+        
+        if (choice == 'y' || choice == 'Y') {
+            std::cout << "\n--- ALL TRANSACTIONS (Linked List) ---\n";
+            current = head;
+            count = 0;
+            while (current != nullptr) {
+                const Transaction& t = current->data;
+                std::cout << "ID: " << t.transaction_id
+                          << ", Date: " << t.timestamp
+                          << ", Amount: " << t.amount
+                          << ", Type: " << t.transaction_type
+                          << ", Location: " << t.location
+                          << ", Channel: " << t.payment_channel
+                          << std::endl;
+                current = current->next;
+                count++;
+            }
+            std::cout << "Total: " << size << " transactions\n";
+        }
+    } else {
+        std::cout << "Total: " << size << " transactions\n";
     }
-    std::cout << "Total: " << size << " transactions\n";
+    
     std::cout << "--------------------------------\n";
 }
 
-// Groups transactions by payment channel (returns a new LinkedListStore)
+// group transactions by payment channel
 LinkedListStore LinkedListStore::groupByPaymentChannel(const std::string& channel) const {
     LinkedListStore grouped;
     Node* current = head;
@@ -115,7 +145,7 @@ LinkedListStore LinkedListStore::groupByPaymentChannel(const std::string& channe
     return grouped;
 }
 
-// Searches for transactions by type (returns a new LinkedListStore)
+// search for transactions by type
 LinkedListStore LinkedListStore::searchByTransactionType(const std::string& type) const {
     LinkedListStore found;
     Node* current = head;
@@ -130,7 +160,7 @@ LinkedListStore LinkedListStore::searchByTransactionType(const std::string& type
     return found;
 }
 
-// Helper method to find the middle of a linked list
+// helper method to find middle of linked list
 Node* LinkedListStore::getMiddle(Node* head) {
     if (head == nullptr || head->next == nullptr) {
         return head;
@@ -147,7 +177,7 @@ Node* LinkedListStore::getMiddle(Node* head) {
     return slow;
 }
 
-// Helper method to merge two sorted linked lists
+// helper method to merge two sorted linked lists
 Node* LinkedListStore::merge(Node* left, Node* right) {
     if (left == nullptr) return right;
     if (right == nullptr) return left;
@@ -165,7 +195,7 @@ Node* LinkedListStore::merge(Node* left, Node* right) {
     return result;
 }
 
-// Recursive merge sort for linked list
+// recursive merge sort for linked list
 Node* LinkedListStore::mergeSort(Node* head) {
     if (head == nullptr || head->next == nullptr) {
         return head;
@@ -181,14 +211,14 @@ Node* LinkedListStore::mergeSort(Node* head) {
     return merge(left, right);
 }
 
-// Sorts transactions by location in ascending order using merge sort
+// sort transactions by location using merge sort
 void LinkedListStore::sortByLocation() {
     if (size > 1) {
         head = mergeSort(head);
     }
 }
 
-// Exports transactions to JSON format
+// export transactions to json format
 nlohmann::json LinkedListStore::toJSON() const {
     nlohmann::json j_array = nlohmann::json::array();
     Node* current = head;
@@ -222,13 +252,14 @@ nlohmann::json LinkedListStore::toJSON() const {
     return j_array;
 }
 
-// Gets all fraudulent transactions
+// get all fraudulent transactions
 LinkedListStore LinkedListStore::getFraudulentTransactions() const {
-    LinkedListStore fraudulent; // Create a new LinkedListStore for fraudulent transactions
+    LinkedListStore fraudulent;
     Node* current = head;
     while (current != nullptr) {
-        // Assuming 'is_fraud' is stored as a string like "TRUE" or "FALSE"
-        if (toLower(current->data.is_fraud) == "true") {
+        std::string fraudValue = current->data.is_fraud;
+        // check for true/false values (case-insensitive)
+        if (toLower(fraudValue) == "true") {
             fraudulent.addTransaction(current->data);
         }
         current = current->next;

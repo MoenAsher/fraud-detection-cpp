@@ -40,6 +40,9 @@ public:
 
     // Get fraudulent transactions
     ArrayStore getFraudulentTransactions() const;
+
+    // Debug method to check fraud values
+    void debugFraudValues() const;
 };
 
 #endif // ARRAY_STORE_HPP 
